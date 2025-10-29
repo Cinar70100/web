@@ -1,8 +1,8 @@
-'use client'; // Bu bileşen state (açık/kapalı) tutar
+'use client'; 
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation'; // Aktif linki bulmak için
+import { usePathname } from 'next/navigation'; 
 import type { NavItem } from '@/lib/admin-nav-data';
 
 interface SidebarMenuItemProps {
@@ -11,7 +11,8 @@ interface SidebarMenuItemProps {
 
 export default function SidebarMenuItem({ item }: SidebarMenuItemProps) {
   const pathname = usePathname();
-  const [isOpen, setIsOpen] = useState(false);
+  // GÜNCELLEME: Aktif yola göre alt menüleri varsayılan olarak açık başlat
+  const [isOpen, setIsOpen] = useState(pathname.startsWith(item.href));
 
   // Bu menü veya alt menülerinden biri aktif mi?
   const isActive = pathname === item.href || (item.children && item.children.some(child => pathname === child.href));
@@ -22,12 +23,14 @@ export default function SidebarMenuItem({ item }: SidebarMenuItemProps) {
       <li className={`${isActive ? 'bg-gray-700' : ''} rounded-lg`}>
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="flex w-full items-center justify-between p-3 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg"
+          // GÜNCELLEME: Renk 'text-gray-300' -> 'text-gray-100' yapıldı
+          // GÜNCELLEME: 'flex items-center' eklendi
+          className="flex w-full items-center justify-between p-3 text-sm font-medium text-gray-100 hover:bg-gray-700 hover:text-white rounded-lg"
         >
           <span className="flex items-center">
-            {/* İkon Placeholder */}
-            {/* <span className="mr-3">ICON</span> */}
-            {item.title}
+            {/* GÜNCELLEME: İkon gösterme alanı eklendi */}
+            {item.icon && <span className="mr-3 flex-shrink-0">{item.icon}</span>}
+            <span>{item.title}</span>
           </span>
           {/* Aç/Kapa Oku (Chevron) */}
           <svg
@@ -48,10 +51,11 @@ export default function SidebarMenuItem({ item }: SidebarMenuItemProps) {
               <li key={child.title}>
                 <Link
                   href={child.href}
+                  // GÜNCELLEME: Alt menü rengi 'text-gray-400' -> 'text-gray-300' yapıldı
                   className={`block rounded-lg p-2.5 text-xs font-medium ${
                     pathname === child.href
                       ? 'text-white bg-gray-600' // Aktif alt link
-                      : 'text-gray-400 hover:text-white hover:bg-gray-700' // Pasif alt link
+                      : 'text-gray-300 hover:text-white hover:bg-gray-700' // Pasif alt link
                   }`}
                 >
                   {child.title}
@@ -69,14 +73,17 @@ export default function SidebarMenuItem({ item }: SidebarMenuItemProps) {
     <li>
       <Link
         href={item.href}
-        className={`block rounded-lg p-3 text-sm font-medium ${
+         // GÜNCELLEME: Renk 'text-gray-300' -> 'text-gray-100' yapıldı
+         // GÜNCELLEME: 'flex items-center' eklendi
+        className={`flex items-center rounded-lg p-3 text-sm font-medium ${
           isActive
             ? 'text-white bg-gray-700' // Aktif ana link
-            : 'text-gray-300 hover:bg-gray-700 hover:text-white' // Pasif ana link
+            : 'text-gray-100 hover:bg-gray-700 hover:text-white' // Pasif ana link
         }`}
       >
-        {/* <span className="mr-3">ICON</span> */}
-        {item.title}
+        {/* GÜNCELLEME: İkon gösterme alanı eklendi */}
+        {item.icon && <span className="mr-3 flex-shrink-0">{item.icon}</span>}
+        <span>{item.title}</span>
       </Link>
     </li>
   );
