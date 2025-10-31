@@ -5,12 +5,19 @@ import StatCard from "@/components/admin/dashboard/StatCard";
 import WeekIncomeCard from "@/components/admin/dashboard/WeekIncomeCard";
 
 // Tablolar (GÜNCELLEME: İsimleri değiştirildi)
-import PopularListingsTable from "@/components/admin/dashboard/PopularListingsTable";
-import PopularNewsTable from "@/components/admin/dashboard/PopularNewsTable";
+import RecentOrdersCard from "@/components/admin/dashboard/RecentOrdersCard";
+import RecentTicketsCard from "@/components/admin/dashboard/RecentTicketsCard";
 
 // Listeler
 import CommentsList from "@/components/admin/dashboard/CommentsList";
 import ContactsList from "@/components/admin/dashboard/ContactsList";
+
+import {
+  ClipboardList,
+  MessageCircle,
+  Ticket,
+  Users,
+} from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Yönetim Paneli",
@@ -27,41 +34,48 @@ export default function DashboardPage() {
     
       {/* 1. SATIR: İstatistik Kartları */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4 lg:grid-rows-2">
-        
-        {/* Geniş Kart (WeekIncome - Bu kartı daha sonra değiştirebiliriz) */}
-        <WeekIncomeCard /> 
-        
-        {/* GÜNCELLEME: StatCard başlıkları değiştirildi */}
+        <WeekIncomeCard />
+
         <StatCard
-          title="Toplam Kullanıcı" // Eskisi: "Open tickets"
-          value="152" // Demo veri
-          percentage="+5%" // Demo veri
-          bgColor="bg-red-500"
+          title="Open tickets"
+          value="26"
+          trendLabel="+25%"
+          description="since last week"
+          accentColor="bg-gradient-to-br from-[#7755f6] via-[#6c4ff6] to-[#5531db]"
+          icon={<Ticket className="h-5 w-5" />}
         />
         <StatCard
-          title="Toplam İlan" // Eskisi: "Closes tickets"
-          value="1.240" // Demo veri
-          percentage="+12%" // Demo veri
-          bgColor="bg-purple-500"
+          title="Close tickets"
+          value="12"
+          trendLabel="-4%"
+          trendType="negative"
+          description="resolved today"
+          accentColor="bg-gradient-to-br from-[#4e9ef5] via-[#3b82f6] to-[#1d4ed8]"
+          icon={<MessageCircle className="h-5 w-5" />}
         />
         <StatCard
-          title="Toplam Emlak Ofisi" // Eskisi: "New clients"
-          value="35" // Demo veri
-          percentage="+2" // Demo veri
-          bgColor="bg-orange-500"
+          title="New clients"
+          value="12"
+          trendLabel="+6%"
+          description="in the last 24h"
+          accentColor="bg-gradient-to-br from-[#f59f0b] via-[#f97316] to-[#ea580c]"
+          icon={<Users className="h-5 w-5" />}
         />
         <StatCard
-          title="Toplam Sipariş" // Eskisi: "Here is an example..."
-          value="88" // Demo veri
-          percentage="+8%" // Demo veri
-          bgColor="bg-green-500"
+          title="Here is an example of a long name"
+          value="$3.240"
+          trendLabel="steady"
+          trendType="neutral"
+          description="all systems normal"
+          accentColor="bg-gradient-to-br from-[#34d399] via-[#10b981] to-[#047857]"
+          icon={<ClipboardList className="h-5 w-5" />}
         />
       </div>
 
       {/* 2. SATIR: Tablolar (GÜNCELLEME: Yeni bileşenler çağrıldı) */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <PopularListingsTable /> {/* Eskisi: RecentOrdersTable */}
-        <PopularNewsTable /> {/* Eskisi: RecentTicketsTable */}
+        <RecentOrdersCard />
+        <RecentTicketsCard />
       </div>
       
       {/* 3. SATIR: Listeler (Comments/Contacts - Bu kartları da daha sonra güncelleyebiliriz) */}

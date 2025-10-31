@@ -1,33 +1,34 @@
+"use client";
+
+import { useState } from "react";
 import Sidebar from "@/components/admin/Sidebar";
 import Header from "@/components/admin/Header";
 
 /**
- * Bu, (admin) rota grubu içindeki tüm sayfalar (/dashboard, /dashboard/ilanlar vb.)
- * için geçerli olacak ana panel yerleşimidir.
- * Sitenin public (ziyaretçi) kısmından tamamen ayrıdır.
+ * Bu layout, yönetim paneli rotalarındaki tüm sayfaları sarar
+ * ve masaüstünde sabit bir sidebar + içerik alanı düzeni,
+ * mobilde ise açılıp kapanabilen bir çekmece menüsü sağlar.
  */
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   return (
-    // Tailwind'in 'h-screen' ve 'flex' özellikleri ile tam ekran bir layout oluşturuyoruz.
-    <div className="flex h-screen overflow-hidden bg-gray-100">
-      
-      {/* 1. Statik Sidebar */}
-      <Sidebar />
+    <div className="relative flex min-h-screen bg-gray-100">
+      <Sidebar
+        isMobileOpen={isSidebarOpen}
+        onMobileClose={() => setIsSidebarOpen(false)}
+      />
 
-      {/* 2. Kaydırılabilir Ana İçerik Alanı */}
-      <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden pl-60"> {/* pl-60 = Sidebar genişliği */}
-        
-        {/* 2a. Yapışkan Header */}
-        <Header />
+      <div className="flex flex-1 flex-col lg:pl-64">
+        <Header onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)} />
 
-        {/* 2b. Sayfa İçeriği */}
-        <main>
-          <div className="mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10">
-            {children} {/* Buraya /dashboard/page.tsx gibi sayfalar render edilecek */}
+        <main className="flex-1 overflow-y-auto">
+          <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
+            {children}
           </div>
         </main>
       </div>

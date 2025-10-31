@@ -1,68 +1,67 @@
 import React from 'react';
-import Image from 'next/image'; // Next.js'in optimize edilmiş resim bileşeni
+import { MoreHorizontal, Star } from 'lucide-react';
+
 import DashboardCard from './DashboardCard';
-// Yorumlar demo verisi
+
 const comments = [
   {
     author: 'Matt McGill',
-    avatar: '/images/avatars/avatar1.png', // Bu resimleri daha sonra ekleyeceğiz, şimdilik yolunu belirtiyoruz
-    date: 'Today 12:45',
+    date: 'Today · 5:32 pm',
     text: "That's a great idea! I'm sure we could start this project as soon as possible.",
     starred: true,
   },
   {
     author: 'Tim Collins',
-    avatar: '/images/avatars/avatar2.png',
-    date: 'Today 12:45',
-    text: "Let's meet tomorrow!",
+    date: 'Today · 4:21 pm',
+    text: "Let’s meet tomorrow. I have several updates to share with you.",
+    starred: false,
+  },
+  {
+    author: 'Kate Stone',
+    date: 'Yesterday · 7:10 pm',
+    text: 'The documents are ready. Please check the shared folder and let me know.',
     starred: false,
   },
 ];
 
-// Kart başlığı sağındaki kontroller
 const cardControls = (
-  <button className="hover:text-gray-600">&#8230;</button> // '...' ikonu
+  <button className="rounded-full p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600" aria-label="Kart seçenekleri">
+    <MoreHorizontal className="h-4 w-4" />
+  </button>
 );
 
 export default function CommentsList() {
   return (
     <DashboardCard title="Comments" headerControls={cardControls}>
-      <div className="flex flex-col divide-y divide-gray-200">
-        {comments.map((comment, index) => (
-          <div key={index} className="flex p-4 hover:bg-gray-50">
-            {/* Avatar Alanı */}
-            <div className="mr-4 flex-shrink-0">
-              {/* Geçici Avatar: Gerçek resim dosyaları eklenene kadar
-                  kullanıcı adının baş harfini göstereceğiz. */}
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500 text-white">
-                {comment.author.charAt(0)}
-              </div>
-              {/* // Gerçek Image bileşeni (dosyaları ekleyince açılacak)
-                <Image
-                  src={comment.avatar}
-                  alt={`${comment.author} avatar`}
-                  width={40}
-                  height={40}
-                  className="rounded-full"
-                /> 
-              */}
+      <div className="flex flex-col divide-y divide-gray-100">
+        {comments.map((comment) => (
+          <div key={comment.author} className="flex items-start gap-4 py-4">
+            <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-500 text-sm font-semibold text-white">
+              {comment.author
+                .split(' ')
+                .map((part) => part[0])
+                .join('')
+                .slice(0, 2)}
             </div>
-            
-            {/* Yorum İçeriği */}
+
             <div className="flex-1">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="font-semibold text-gray-900">{comment.author}</span>
-                <span className="text-xs text-gray-500">{comment.date}</span>
+                <span className="text-xs uppercase tracking-wide text-gray-400">{comment.date}</span>
               </div>
-              <p className="mt-1 text-sm text-gray-700">{comment.text}</p>
-              
-              {/* Yorum Altı İkonlar (Star) */}
-              <div className="mt-2">
-                <button className={`text-sm ${comment.starred ? 'text-yellow-500' : 'text-gray-400'} hover:text-yellow-500`}>
-                  &#9733; {/* Star icon */}
-                </button>
-              </div>
+              <p className="mt-2 text-sm leading-relaxed text-gray-600">{comment.text}</p>
             </div>
+
+            <button
+              className={`mt-1 inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border text-sm transition ${
+                comment.starred
+                  ? 'border-amber-300 text-amber-500 hover:bg-amber-50'
+                  : 'border-gray-200 text-gray-400 hover:bg-gray-100 hover:text-amber-500'
+              }`}
+              aria-label={comment.starred ? 'Yorumu favorilerden kaldır' : 'Yorumu favorilere ekle'}
+            >
+              <Star className={`h-4 w-4 ${comment.starred ? 'fill-current' : ''}`} />
+            </button>
           </div>
         ))}
       </div>

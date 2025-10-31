@@ -1,8 +1,10 @@
 // src/components/home/HeroSearch.tsx
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
-import { Search, ChevronDown, ChevronUp, Tag, Key, CalendarDays } from 'lucide-react'; // İkonları import et (Gereksiz olanlar kaldırıldı)
+import React, { useEffect, useRef, useState } from 'react';
+import { CalendarDays, ChevronDown, ChevronUp, Key, MapPin, Search, Tag, Users } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 // Arayüz tipi
 interface SearchFormData {
@@ -11,59 +13,93 @@ interface SearchFormData {
   searchText: string;
 }
 
+const HERO_SLIDES = [
+  {
+    image: '/images/demo/slide-placeholder-1.jpg',
+    headline: 'Karaman’da doğru gayrimenkulü hızlıca bulun',
+    description:
+      'Yerel uzmanlıkla hazırlanan satılık ve kiralık ilan portföyümüzle size en uygun evi, ofisi ya da arsayı kolayca keşfedin.',
+  },
+  {
+    image: '/images/demo/listing-2.jpg',
+    headline: 'Yatırım potansiyeli yüksek projeleri takip edin',
+    description:
+      'Karaman ve çevresindeki yeni konut projelerini piyasa analizleri ve güncel fiyat bilgileriyle birlikte görüntüleyin.',
+  },
+  {
+    image: '/images/demo/project-2.jpg',
+    headline: 'Danışman desteğiyle kararınızı güçlendirin',
+    description: 'Uzman ekibimizle görüntülü tur, yerinde keşif ve kredi danışmanlığı gibi ayrıcalıklara erişin.',
+  },
+];
+
+const MAIN_CATEGORIES = [
+  { key: 'konut', label: 'Konut' },
+  { key: 'isyeri', label: 'İşyeri' },
+  { key: 'arsa', label: 'Arsa' },
+  { key: 'bina', label: 'Bina' },
+  { key: 'devremulk', label: 'Devremülk' },
+  { key: 'turistik', label: 'Turistik Tesis' },
+];
+
+const LISTING_TABS = [
+  { key: 'satilik', label: 'Satılık', Icon: Tag },
+  { key: 'kiralik', label: 'Kiralık', Icon: Key },
+  { key: 'gunluk', label: 'Günlük Kiralık', Icon: CalendarDays },
+] as const;
+
 export default function HeroSearch() {
   const [activeListingType, setActiveListingType] = useState<'satilik' | 'kiralik' | 'gunluk'>('satilik');
   const [isCategoryPanelOpen, setIsCategoryPanelOpen] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [shouldRotateSlides, setShouldRotateSlides] = useState(true);
   const [formData, setFormData] = useState<SearchFormData>({
     listingType: 'satilik',
-    mainCategory: 'konut', // Varsayılan konut
+    mainCategory: 'konut',
     searchText: '',
   });
+  const router = useRouter();
 
   const categoryButtonRef = useRef<HTMLButtonElement>(null);
   const categoryPanelRef = useRef<HTMLDivElement>(null);
 
-  // Stil tanımlamaları
-  const topTabBaseStyle = "px-5 py-3 text-sm font-medium focus:outline-none transition-colors duration-150 border-b-2 flex items-center gap-1.5 justify-center flex-grow text-center";
-  const topTabActiveStyle = "text-blue-600 border-blue-600 bg-white bg-opacity-10";
-  const topTabInactiveStyle = "text-white border-transparent hover:bg-white hover:bg-opacity-5";
+  const topTabBaseStyle =
+    'top-tab-button inline-flex flex-1 items-center justify-center gap-2 rounded-full px-4 py-2 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400';
 
-  // Ana Kategori Listesi
-  const mainCategories = [
-    { key: 'konut', label: 'Konut' },
-    { key: 'isyeri', label: 'İşyeri' },
-    { key: 'arsa', label: 'Arsa' },
-    { key: 'bina', label: 'Bina' },
-    { key: 'devremulk', label: 'Devremülk' },
-    { key: 'turistik', label: 'Turistik Tesis' },
-  ];
-
-  // Üst Sekme değiştiğinde
   const handleListingTypeClick = (type: 'satilik' | 'kiralik' | 'gunluk') => {
     setActiveListingType(type);
-    setIsCategoryPanelOpen(true); // Sekmeye tıklayınca paneli AÇ
+    setIsCategoryPanelOpen(true);
     setFormData(prev => ({ ...prev, listingType: type, mainCategory: prev.mainCategory || 'konut' }));
   };
 
-  // Ana Kategori seçildiğinde
   const handleMainCategorySelect = (categoryKey: string) => {
     setFormData(prev => ({ ...prev, mainCategory: categoryKey }));
-    setIsCategoryPanelOpen(false); // Kategori seçilince paneli kapat
+    setIsCategoryPanelOpen(false);
   };
 
-  // Input değiştiğinde
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({ ...prev, searchText: e.target.value }));
   };
 
-  // Form gönderimi
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    console.log("Arama verisi:", formData);
-    // Arama sayfasına yönlendirme
+  const handleManualSlideSelect = (index: number) => {
+    setCurrentSlide(index);
+    setShouldRotateSlides(false);
   };
 
-  // Dışarı tıklandığında paneli kapatma
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const searchParams = new URLSearchParams({
+      tip: formData.listingType,
+      kategori: formData.mainCategory,
+    });
+
+    if (formData.searchText.trim()) {
+      searchParams.set('q', formData.searchText.trim());
+    }
+
+    router.push(`/ilan-ara?${searchParams.toString()}`);
+  };
+
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -72,110 +108,235 @@ export default function HeroSearch() {
       ) {
         const isTopTabClick = (event.target as HTMLElement).closest('.top-tab-button');
         if (!isTopTabClick) {
-            setIsCategoryPanelOpen(false);
+          setIsCategoryPanelOpen(false);
         }
       }
     }
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [categoryButtonRef, categoryPanelRef]);
+  }, []);
 
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('matchMedia' in window)) {
+      return undefined;
+    }
+
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const updatePreference = () => setShouldRotateSlides(!mediaQuery.matches);
+    updatePreference();
+    mediaQuery.addEventListener('change', updatePreference);
+    return () => mediaQuery.removeEventListener('change', updatePreference);
+  }, []);
+
+  useEffect(() => {
+    if (!shouldRotateSlides) {
+      return undefined;
+    }
+    const slideTimer = setInterval(() => {
+      setCurrentSlide(prev => (prev + 1) % HERO_SLIDES.length);
+    }, 8000);
+    return () => clearInterval(slideTimer);
+  }, [shouldRotateSlides]);
+
+  useEffect(() => {
+    function handleKeyPress(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setIsCategoryPanelOpen(false);
+      }
+    }
+    document.addEventListener('keydown', handleKeyPress);
+    return () => document.removeEventListener('keydown', handleKeyPress);
+  }, []);
+
+  const activeSlide = HERO_SLIDES[currentSlide];
 
   return (
-    // Ana Konteyner
-    <div className="relative bg-gray-700 h-[560px] flex items-center justify-center bg-cover bg-center" style={{backgroundImage: "url('/images/demo/slide-placeholder-1.jpg')"}}>
-      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent"></div>
+    <section className="relative flex min-h-[560px] items-center justify-center overflow-hidden bg-slate-900">
+      <div
+        className="absolute inset-0 bg-cover bg-center transition-[background-image] duration-700"
+        style={{ backgroundImage: `url('${activeSlide.image}')` }}
+        aria-hidden="true"
+      />
+      <div className="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-slate-950/60 to-slate-900/20" aria-hidden="true" />
 
-      {/* Arama Alanı Konteyneri */}
-      <div className="relative z-10 w-full max-w-4xl px-4">
-        {/* Şeffaf Arka Planlı Kutu */}
-        <div className="bg-black bg-opacity-60 p-4 rounded-lg backdrop-blur-sm shadow-lg">
-          {/* Üst Kategori Sekmeleri (Satılık/Kiralık/Günlük) */}
-          <div className="flex justify-center border-b border-white border-opacity-20 mb-4">
-            {([
-                { key: 'satilik', label: 'Satılık', Icon: Tag },
-                { key: 'kiralik', label: 'Kiralık', Icon: Key },
-                { key: 'gunluk', label: 'Günlük Kiralık', Icon: CalendarDays }
-            ] as const).map((tab) => (
-              <button
-                key={tab.key}
-                type="button"
-                className={`top-tab-button ${topTabBaseStyle} ${activeListingType === tab.key ? topTabActiveStyle : topTabInactiveStyle}`}
-                onClick={() => handleListingTypeClick(tab.key)}
-              >
-                <tab.Icon size={16} />
-                {tab.label}
-              </button>
-            ))}
+      <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-10 px-4 py-10 lg:flex-row lg:items-center">
+        <div className="flex-1 space-y-6 text-white" aria-live="polite">
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.2em]">
+            Karaman Ev Bul
           </div>
-
-          {/* Arama Formu ve Açılır Panel */}
-          <div className="relative"> {/* Açılır panelin konumlanması için */}
-            <form onSubmit={handleSubmit} className="flex items-stretch gap-0 relative z-10">
-
-              {/* Kategori Seçim Butonu (Sabit Genişlik) */}
-              <button
-                ref={categoryButtonRef}
-                type="button"
-                onClick={() => setIsCategoryPanelOpen(!isCategoryPanelOpen)}
-                // Yuvarlak köşe sadece solda, Sabit genişlik w-48
-                className="px-4 py-3 bg-white border border-r-0 border-gray-300 rounded-l-md text-gray-700 hover:bg-gray-100 flex items-center justify-between w-48 flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <span className="text-sm truncate pr-1">
-                  {formData.mainCategory
-                    ? mainCategories.find(c => c.key === formData.mainCategory)?.label
-                    : 'Kategori Seçin'}
-                </span>
-                {isCategoryPanelOpen ? <ChevronUp size={16} className="text-gray-500" /> : <ChevronDown size={16} className="text-gray-500" />}
-              </button>
-
-              {/* Ana Arama Inputu (Genişliği değişmiyor) */}
-              <div className="relative flex-grow">
-                <input
-                  type="text"
-                  name="searchText"
-                  value={formData.searchText}
-                  onChange={handleChange}
-                  placeholder="Konum, ilan no ya da firma adı ile arayın"
-                  // Sadece üst ve alt kenarlık var, solda butona bitişik
-                  className="w-full h-full px-4 py-3 border-t border-b border-l-0 border-r border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 text-base"
-                />
+          <div className="space-y-4">
+            <h1 className="text-3xl font-semibold leading-tight sm:text-4xl lg:text-5xl">
+              {activeSlide.headline}
+            </h1>
+            <p className="max-w-xl text-base text-slate-200 sm:text-lg">
+              {activeSlide.description}
+            </p>
+          </div>
+          <dl className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-3">
+            <div className="flex items-start gap-3 rounded-lg border border-white/10 bg-white/5 p-4">
+              <Tag size={20} className="mt-0.5 text-blue-300" aria-hidden="true" />
+              <div>
+                <dt className="text-slate-300">2.400+ canlı ilan</dt>
+                <dd className="text-slate-400">Her gün güncellenen konut, arsa ve iş yeri portföyü.</dd>
               </div>
+            </div>
+            <div className="flex items-start gap-3 rounded-lg border border-white/10 bg-white/5 p-4">
+              <Users size={20} className="mt-0.5 text-blue-300" aria-hidden="true" />
+              <div>
+                <dt className="text-slate-300">Uzman danışman ekibi</dt>
+                <dd className="text-slate-400">Tüm süreçlerde yanınızda olan yerel uzmanlar.</dd>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 rounded-lg border border-white/10 bg-white/5 p-4">
+              <MapPin size={20} className="mt-0.5 text-blue-300" aria-hidden="true" />
+              <div>
+                <dt className="text-slate-300">Mahalle bazlı arama</dt>
+                <dd className="text-slate-400">Konum, ilan numarası ya da ofis adına göre filtreleyin.</dd>
+              </div>
+            </div>
+          </dl>
+        </div>
 
-              {/* Ara Butonu */}
-              <button
-                type="submit"
-                // Yuvarlak köşe sadece sağda
-                className="px-6 py-3 bg-blue-600 text-white rounded-r-md font-semibold hover:bg-blue-700 flex items-center justify-center gap-2 text-base flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <Search size={18} />
-                <span>ARA</span>
-              </button>
-            </form>
+        <div className="flex-1">
+          <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-6 shadow-2xl backdrop-blur">
+            <div className="flex justify-center gap-2 rounded-full border border-white/10 bg-white/5 p-1 text-sm font-medium text-white">
+              {LISTING_TABS.map(tab => (
+                <button
+                  key={tab.key}
+                  type="button"
+                  className={`${topTabBaseStyle} ${
+                    activeListingType === tab.key
+                      ? 'bg-white text-slate-900 shadow'
+                      : 'text-slate-200 hover:bg-white/10'
+                  }`}
+                  onClick={() => handleListingTypeClick(tab.key)}
+                  aria-pressed={activeListingType === tab.key}
+                >
+                  <tab.Icon size={16} aria-hidden="true" />
+                  {tab.label}
+                </button>
+              ))}
+            </div>
 
-            {/* Açılır Kategori Paneli (Konumu ve stili aynı kaldı) */}
-            {isCategoryPanelOpen && (
+            <div className="relative mt-6">
+              <form onSubmit={handleSubmit} className="relative z-10 flex flex-col gap-4">
+                <div className="flex flex-col gap-4 sm:flex-row">
+                  <div className="relative sm:w-48">
+                    <button
+                      ref={categoryButtonRef}
+                      type="button"
+                      onClick={() => setIsCategoryPanelOpen(!isCategoryPanelOpen)}
+                      className="flex w-full items-center justify-between gap-2 rounded-lg border border-slate-700 bg-slate-900 px-4 py-3 text-left text-sm text-white transition hover:border-blue-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+                      aria-haspopup="listbox"
+                      aria-expanded={isCategoryPanelOpen}
+                      aria-controls="hero-category-list"
+                    >
+                      <span className="truncate">
+                        {formData.mainCategory
+                          ? MAIN_CATEGORIES.find(c => c.key === formData.mainCategory)?.label
+                          : 'Kategori Seçin'}
+                      </span>
+                      {isCategoryPanelOpen ? (
+                        <ChevronUp size={16} className="text-slate-400" aria-hidden="true" />
+                      ) : (
+                        <ChevronDown size={16} className="text-slate-400" aria-hidden="true" />
+                      )}
+                    </button>
+                    {isCategoryPanelOpen && (
+                      <div
+                        ref={categoryPanelRef}
+                        id="hero-category-list"
+                        role="listbox"
+                        className="absolute z-20 mt-2 max-h-60 w-full overflow-y-auto rounded-lg border border-slate-700 bg-slate-900/95 shadow-xl"
+                      >
+                        {MAIN_CATEGORIES.map(cat => (
+                          <button
+                            key={cat.key}
+                            type="button"
+                            role="option"
+                            aria-selected={formData.mainCategory === cat.key}
+                            onClick={() => handleMainCategorySelect(cat.key)}
+                            className={`flex w-full items-center justify-between px-4 py-2 text-sm transition hover:bg-blue-500/10 focus:outline-none focus-visible:bg-blue-500/20 ${
+                              formData.mainCategory === cat.key
+                                ? 'text-blue-300'
+                                : 'text-slate-200'
+                            }`}
+                          >
+                            {cat.label}
+                            {formData.mainCategory === cat.key && (
+                              <span className="text-xs uppercase tracking-widest text-blue-300">Seçili</span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <label className="sr-only" htmlFor="hero-search-input">
+                    Arama metni
+                  </label>
+                  <div className="relative flex-1">
+                    <input
+                      id="hero-search-input"
+                      type="text"
+                      name="searchText"
+                      value={formData.searchText}
+                      onChange={handleChange}
+                      placeholder="Konum, ilan no ya da firma adı ile arayın"
+                      className="h-full w-full rounded-lg border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-white placeholder:text-slate-500 transition focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-500 px-5 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-blue-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
+                >
+                  <Search size={18} aria-hidden="true" />
+                  Aramayı Başlat
+                </button>
+              </form>
+
               <div
-                ref={categoryPanelRef}
-                className="absolute top-full left-0 mt-1 w-48 bg-white rounded-md shadow-lg border z-20 max-h-60 overflow-y-auto"
-              >
-                {mainCategories.map(cat => (
+                className="pointer-events-none absolute -left-12 -top-12 hidden h-24 w-24 rounded-full border border-white/10 lg:block"
+                aria-hidden="true"
+              />
+              <div
+                className="pointer-events-none absolute -right-8 -bottom-10 hidden h-32 w-32 rounded-full border border-white/10 lg:block"
+                aria-hidden="true"
+              />
+            </div>
+
+            <div className="mt-6 flex items-center justify-between text-xs text-slate-400">
+              <div className="flex items-center gap-2">
+                {HERO_SLIDES.map((slide, index) => (
                   <button
-                    key={cat.key}
+                    key={slide.image}
                     type="button"
-                    onClick={() => handleMainCategorySelect(cat.key)}
-                    className={`block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 ${formData.mainCategory === cat.key ? 'text-blue-600 font-medium bg-blue-50' : 'text-gray-700'}`}
-                  >
-                    {cat.label}
-                  </button>
+                    className={`h-2 w-8 rounded-full transition ${
+                      currentSlide === index ? 'bg-blue-400' : 'bg-white/20 hover:bg-white/40'
+                    }`}
+                    onClick={() => handleManualSlideSelect(index)}
+                    aria-label={`${slide.headline} görselini göster`}
+                    aria-pressed={currentSlide === index}
+                  />
                 ))}
               </div>
-            )}
-          </div> {/* Arama Formu ve Açılır Panel sonu */}
-        </div> {/* Şeffaf Kutu sonu */}
-      </div> {/* Arama Alanı Konteyneri sonu */}
-    </div> // Ana Konteyner sonu
+              <span>
+                Aradığınızı bulamıyor musunuz?{' '}
+                <Link
+                  href="/iletisim"
+                  className="text-blue-300 underline decoration-dotted underline-offset-2 hover:text-blue-200"
+                >
+                  Danışmanla görüşün
+                </Link>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
