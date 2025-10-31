@@ -1,50 +1,62 @@
 import React from 'react';
+import { ArrowDownRight, ArrowUpRight, Minus } from 'lucide-react';
+
+type TrendType = 'positive' | 'negative' | 'neutral';
 
 interface StatCardProps {
   title: string;
   value: string;
-  percentage?: string;
-  bgColor: string;
-  textColor?: string;
+  description?: string;
+  trendLabel?: string;
+  trendType?: TrendType;
+  accentColor: string;
+  icon: React.ReactNode;
 }
+
+const trendIconMap: Record<TrendType, React.ReactNode> = {
+  positive: <ArrowUpRight className="h-3.5 w-3.5" />,
+  negative: <ArrowDownRight className="h-3.5 w-3.5" />,
+  neutral: <Minus className="h-3.5 w-3.5" />,
+};
+
+const trendClassMap: Record<TrendType, string> = {
+  positive: 'bg-white/15 text-white',
+  negative: 'bg-rose-100 text-rose-700',
+  neutral: 'bg-white/15 text-white',
+};
 
 export default function StatCard({
   title,
   value,
-  percentage,
-  bgColor,
-  textColor = 'text-white',
+  description,
+  trendLabel,
+  trendType = 'positive',
+  accentColor,
+  icon,
 }: StatCardProps) {
   return (
-    // GÜNCELLEME:
-    // 'flex h-full flex-col justify-between' eklendi.
-    // 'h-full' kartın grid alanını doldurmasını sağlar.
-    // 'flex-col' dikey flexbox'ı başlatır.
-    // 'justify-between' ilk div'i (değer/başlık) YUKARI,
-    // ikinci div'i (yüzde) AŞAĞI iter.
-    <div 
-      className={`rounded-lg p-6 shadow-md ${bgColor} ${textColor} flex h-full flex-col justify-between`}
+    <div
+      className={`flex h-full flex-col justify-between overflow-hidden rounded-3xl p-6 text-white shadow-md ${accentColor}`}
     >
-      {/* Üst Kısım: Değer ve Başlık */}
-      <div>
-        <div className="text-4xl font-bold">
-          {value}
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-4xl font-semibold">{value}</p>
+          <p className="mt-2 text-sm uppercase tracking-wide text-white/70">{title}</p>
         </div>
-        <div className="mt-2 text-sm font-medium uppercase tracking-wide opacity-90">
-          {title}
+        <div className="rounded-2xl bg-white/15 p-2 text-white">
+          {icon}
         </div>
       </div>
-      
-      {/* Alt Kısım: Yüzdelik Değer (varsa) */}
-      {percentage && (
-        // 'mt-4' (margin-top: auto) yerine 'justify-between' kullandığımız için
-        // bu margin'i korumak iyi bir boşluk sağlar.
-        <div className="mt-4 text-xs"> 
-          <span className="rounded-full bg-black bg-opacity-20 px-2 py-0.5 text-xs font-semibold">
-            {percentage}
+
+      <div className="mt-6 space-y-2 text-xs text-white/80">
+        {trendLabel && (
+          <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 font-semibold ${trendClassMap[trendType]}`}>
+            {trendIconMap[trendType]}
+            {trendLabel}
           </span>
-        </div>
-      )}
+        )}
+        {description && <p className="text-[11px] uppercase tracking-wider text-white/70">{description}</p>}
+      </div>
     </div>
   );
 }
