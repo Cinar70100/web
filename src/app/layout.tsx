@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer"; // ✅ Footer import edildi
 
 // --- Site Ayarları ---
 const siteSettings = {
@@ -38,14 +36,7 @@ export default function RootLayout({
   return (
     <html lang="tr">
       <body className={poppins.className}>
-        {/* Üst Navigasyon */}
-        <Header />
-
-        {/* Sayfa İçeriği */}
-        <main>{children}</main>
-
-        {/* Alt Footer */}
-        <Footer />
+        {children}
 
         {/* Google Analytics */}
         {siteSettings.analyticsID && (
